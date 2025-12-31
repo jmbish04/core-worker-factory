@@ -17,7 +17,7 @@
   // [CONTAINERS]
   // Sandbox SDK configuration with custom Dockerfile
   "containers": {
-    "image": "./lib/container/Dockerfile",
+    "image": "./Dockerfile",
     "class_name": "SandboxContainer"
   },
 
