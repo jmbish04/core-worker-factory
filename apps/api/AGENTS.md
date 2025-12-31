@@ -34,6 +34,49 @@ apps/api/
 
 ```
 
+# Custom Sandbox-sdk Dockerfile Python module structure
+
+```text
+apps/api/lib/container/scripts/
+├── requirements.txt
+├── cloudforge/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── github/
+│   │   ├── __init__.py
+│   │   ├── client.py
+│   │   ├── repo.py
+│   │   └── pr.py
+│   ├── cloudflare/
+│   │   ├── __init__.py
+│   │   ├── client.py
+│   │   ├── d1.py
+│   │   ├── r2.py
+│   │   ├── kv.py
+│   │   └── workers.py
+│   ├── code/
+│   │   ├── __init__.py
+│   │   ├── generator.py
+│   │   ├── parser.py
+│   │   └── formatter.py
+│   ├── build/
+│   │   ├── __init__.py
+│   │   ├── npm.py
+│   │   ├── wrangler.py
+│   │   └── drizzle.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── logging.py
+│       ├── shell.py
+│       └── files.py
+└── scripts/
+    ├── setup_repo.py
+    ├── create_bindings.py
+    ├── deploy_worker.py
+    ├── analyze_build_failure.py
+    └── create_fix_pr.py
+```
+
 ## Tech Stack & Bindings
 
 | Category | Technology | Usage |
