@@ -234,6 +234,17 @@ const docsContext = await agent.callMcpTool('cloudflare-docs', 'search', {
 2. **Agent Errors:** Log to `agentActivityLog` table and broadcast via WebSocket.
 3. **Sandbox Errors:** Catch execution errors, retrieve logs (`cat /var/log/build.log`), and save to task history before cleanup.
 
+## 📚 Documentation & Research Tool
+
+This repository includes a built-in CLI tool for querying Cloudflare documentation via the Model Context Protocol (MCP). Agents should use this tool to verify implementation details for Cloudflare features (D1, Workers AI, Durable Objects, etc.) before writing code.
+
+### Usage
+Run the query script from the project root:
+
+```bash
+pnpm exec tsx scripts/ask-cloudflare.ts "How do I configure Drizzle with Cloudflare D1?"
+```
+
 ## Contributing
 
 1. Update `AGENTS.md` or sub-project `AGENTS.md` when architectural changes occur.
