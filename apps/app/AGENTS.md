@@ -8,9 +8,9 @@ The Frontend Application (`apps/app`) is a **Single Page Application (SPA)** bui
 
 | Category | Technology | Usage |
 |----------|------------|-------|
-| **Runtime** | Bun | Package manager & script runner |
+| **Runtime** | pnpm | Package manager & script runner |
 | **Framework** | React 19 | UI Library (Client-side only) |
-| **Build Tool** | Vite | Bundler & Dev Server |
+| **Build Tool** | Vite | pnpmdler & Dev Server |
 | **Routing** | TanStack Router | Type-safe file-based routing |
 | **Styling** | Tailwind CSS v4 | Utility-first CSS |
 | **Components** | shadcn/ui | Reusable UI components |
@@ -48,14 +48,14 @@ Run these commands from the root or within `apps/app`:
 
 ```bash
 # Development
-bun --filter @repo/app dev    # Start Vite dev server
+pnpm --filter @repo/app dev    # Start Vite dev server
 
 # Testing & Quality
-bun --filter @repo/app test   # Run tests (Vitest)
-bun --filter @repo/app lint   # Lint code
+pnpm --filter @repo/app test   # Run tests (Vitest)
+pnpm --filter @repo/app lint   # Lint code
 
 # Build
-bun --filter @repo/app build  # Build for production
+pnpm --filter @repo/app build  # Build for production
 
 ```
 
