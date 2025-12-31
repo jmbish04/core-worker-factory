@@ -2,7 +2,11 @@
 
 ## Overview
 
-The API service (`apps/api`) is a Hono-based worker that serves as the backend for the application. It utilizes **tRPC** for type-safe communication with the frontend, **Better Auth** for authentication, and **Drizzle ORM** with **Cloudflare Hyperdrive** to connect to a PostgreSQL database (Neon).
+The API service (`apps/api`) is a Hono-based worker that serves as the backend for the application. It utilizes **tRPC** for type-safe communication with the frontend, **Better Auth** for authentication, and **Drizzle ORM** with **Cloudflare Hyperdrive** to connect to a PostgreSQL database.
+
+**Core Architecture Highlights:**
+* **AI Normalization:** Uses the **OpenAI Node.js SDK** as the single standard interface for all AI providers (OpenAI, Google GenAI, Cloudflare Workers AI).
+* **Agent System:** Built using the **Cloudflare Agents SDK**, leveraging stateful "batteries-included" Durable Objects for persistent agentic workflows.
 
 ## Directory Structure
 
@@ -20,6 +24,9 @@ apps/api/
 │   ├── db/
 │   │   ├── index.ts          # Drizzle client instance
 │   │   └── schema.ts         # Database schema definitions
+│   ├── agents/               # Cloudflare Agents SDK implementations
+│   │   ├── index.ts          # Agent registry/exports
+│   │   └── worker-agent.ts   # Specific agent implementation
 │   └── routers/              # tRPC routers
 │       ├── index.ts          # Root router
 │       ├── auth.ts           # Auth-related procedures
@@ -31,42 +38,69 @@ apps/api/
 
 | Category | Technology | Usage |
 | --- | --- | --- |
-| **Runtime** | Bun | Package manager & local runtime |
+| **Runtime** | pnpm | Package manager & local runtime |
 | **Framework** | Hono | Web standard edge framework |
 | **API** | tRPC | Type-safe RPC with Zod validation |
 | **Database** | Postgres (Neon) | Primary data store |
 | **Connection** | Hyperdrive | Cloudflare connection pooling |
 | **ORM** | Drizzle ORM | TypeScript ORM |
 | **Auth** | Better Auth | Authentication & Session management |
-| **AI** | Vercel AI SDK | LLM integration (`@ai-sdk/openai`) |
+| **AI** | **OpenAI Node SDK** | Standardized LLM Client (`openai`) |
+| **Agents** | **Cloudflare Agents SDK** | Stateful Durable Object Agents |
 | **Email** | Resend | Transactional emails |
 
-### Configuration (`wrangler.jsonc`)
+## Development Guidelines
 
-The worker uses **Hyperdrive** for database connections to ensure performance at the edge.
+### 1. AI Integration (OpenAI SDK Normalization)
 
-```jsonc
-// Env Bindings
-{
-  "hyperdrive": [
-    { "binding": "HYPERDRIVE_CACHED", "id": "..." }, // Read-heavy operations
-    { "binding": "HYPERDRIVE_DIRECT", "id": "..." }  // Write-heavy / Transactional
-  ],
-  "vars": {
-    "resend_EMAIL_FROM": "onboarding@resend.dev",
-    "APP_ORIGIN": "[https://example.com](https://example.com)"
+**Strict Rule:** Do not use `ai-sdk` (Vercel AI SDK).
+We use the official `openai` package to normalize interactions across all providers.
+
+**Configuration Pattern:**
+Instantiate the `OpenAI` client dynamically based on the provider required.
+
+```typescript
+import OpenAI from 'openai';
+
+// 1. Standard OpenAI
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
+// 2. Cloudflare Workers AI (via OpenAI Compatibility)
+const workersAi = new OpenAI({
+  apiKey: env.CLOUDFLARE_API_TOKEN,
+  baseURL: `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`,
+});
+
+// 3. Usage Example
+const completion = await workersAi.chat.completions.create({
+  model: '@cf/meta/llama-3-8b-instruct', // Use provider-specific model IDs
+  messages: [{ role: 'user', content: 'Hello' }],
+});
+
+```
+
+### 2. Cloudflare Agents SDK
+
+Agents are stateful Durable Objects. Use the Cloudflare Agents SDK structure.
+
+* **Stateful:** Agents must persist their context/history in the Durable Object storage.
+* **Batteries Included:** Leverage the SDK's built-in handling for state management and connection.
+
+```typescript
+import { Agent } from 'cloudflare-agents-sdk'; // Pseudo-code for SDK import
+
+export class BuildAgent extends Agent {
+  async onRequest(request: Request) {
+    // Agent logic here
   }
 }
 
 ```
 
-## Development Guidelines
+### 3. Database Access
 
-### 1. Database Access
-
-* **ALWAYS** use Drizzle ORM. Never write raw SQL strings unless absolutely necessary for complex aggregations.
+* **ALWAYS** use Drizzle ORM.
 * **ALWAYS** use the `HYPERDRIVE` binding in production/preview.
-* **Schema Changes:** logical changes belong in `@repo/db`. The API consumes the schema from the workspace package.
 
 ```typescript
 // ✅ Correct Usage
@@ -78,54 +112,25 @@ const user = await db.select().from(users).where(eq(users.id, input.id));
 
 ```
 
-### 2. Authentication (Better Auth)
+### 4. Authentication (Better Auth)
 
-* The app uses **Better Auth** with the PostgreSQL adapter.
-* Auth checks should be done via tRPC middleware `protectedProcedure`.
-* Passkeys are supported via `@better-auth/passkey`.
+* Use **Better Auth** with the PostgreSQL adapter.
+* Auth checks via tRPC middleware `protectedProcedure`.
 
 ```typescript
 // ✅ Protected Route Example
 export const userRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.user; // User is attached by middleware
+    return ctx.user;
   }),
-});
-
-```
-
-### 3. tRPC API Design
-
-* **Input Validation:** Always use `zod` schemas for input validation.
-* **Error Handling:** Use `TRPCError` with appropriate codes (`NOT_FOUND`, `UNAUTHORIZED`, `BAD_REQUEST`).
-* **Procedures:** Group procedures into logical routers (e.g., `user`, `org`, `billing`).
-
-### 4. AI Integration (Vercel AI SDK)
-
-* Use `ai` and `@ai-sdk/openai` for LLM operations.
-* Streaming responses should use the Hono stream helper or Vercel AI SDK's `streamText`.
-
-```typescript
-import { streamText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-
-// Hono Route
-app.post('/api/chat', async (c) => {
-  const { messages } = await c.req.json();
-  const result = await streamText({
-    model: openai('gpt-4o'),
-    messages,
-  });
-  return result.toDataStreamResponse();
 });
 
 ```
 
 ## Deployment
 
-* **Command:** `bun deploy` (runs `wrangler deploy`)
+* **Command:** `pnpm deploy` (runs `wrangler deploy`)
 * **Environment Variables:** Managed via `.env` locally and Wrangler secrets in production.
-* **Pre-deploy:** Ensure `@repo/email` is built and DB migrations (`@repo/db`) are applied.
 
 ```
 
@@ -171,7 +176,7 @@ apps/app/
 | Category | Technology | Usage |
 | --- | --- | --- |
 | **Framework** | React 19 | UI Library |
-| **Build Tool** | Vite | Bundler & Dev Server |
+| **Build Tool** | Vite | pnpmdler & Dev Server |
 | **Routing** | TanStack Router | Type-safe file-based routing |
 | **State** | Jotai | Atomic global state |
 | **Data Fetching** | TanStack Query | Async state management (via tRPC) |
@@ -185,7 +190,6 @@ apps/app/
 
 * Use **File-Based Routing** in `src/routes`.
 * Use `__root.tsx` for global providers.
-* Use directory groups (e.g., `(app)`, `(auth)`) to organize layouts without affecting URL paths.
 * **Link Components:** Always use the type-safe `<Link>` component.
 
 ```tsx
@@ -201,8 +205,8 @@ import { Link } from '@tanstack/react-router';
 ### 2. Data Fetching (tRPC)
 
 * Use the `trpc` hook for all API interactions.
-* **Queries:** Use `trpc.router.procedure.useQuery`.
-* **Mutations:** Use `trpc.router.procedure.useMutation` and invalidate queries on success.
+* **Queries:** `trpc.router.procedure.useQuery`
+* **Mutations:** `trpc.router.procedure.useMutation`
 
 ```tsx
 // ✅ Fetching Data
@@ -218,23 +222,20 @@ const mutation = trpc.user.update.useMutation({
 
 ```
 
-### 3. State Management (Jotai)
+### 3. State Management
 
-* Use **Jotai** atoms for global client-side state (e.g., theme, sidebar toggle).
-* Avoid Redux/Context for simple state; use Atoms.
-* Use **TanStack Query** (via tRPC) for ALL server-side state. Do not store server data in Jotai atoms manually.
+* **Jotai:** For client-side UI state (theme, sidebar).
+* **TanStack Query:** For all server-side data. Do not duplicate server data into Jotai.
 
 ### 4. UI Components (shadcn/ui)
 
 * Components live in `src/components/ui`.
-* Do not modify primitives directly unless updating the design system.
-* Compose complex UIs in `src/components/{feature}` using these primitives.
-* **Tailwind v4:** Use the new simplified configuration. No `tailwind.config.js` is needed if using CSS-based config.
+* **Tailwind v4:** Use the new simplified configuration.
 
 ### 5. Authentication
 
 * Use the exported `authClient` from `src/lib/auth.ts`.
-* Protect routes using TanStack Router's `beforeLoad` or a layout wrapper that checks auth state.
+* Protect routes using TanStack Router's `beforeLoad`.
 
 ```typescript
 // src/routes/(app).tsx
@@ -250,6 +251,5 @@ export const Route = createFileRoute('/(app)')({
 
 ## Deployment
 
-* **Command:** `bun deploy` (runs `wrangler deploy`).
-* **Serving:** Deployed as a Cloudflare Worker serving Static Assets (`dist` folder).
-* **SPA Handling:** Wrangler is configured with `"not_found_handling": "single-page-application"` to support client-side routing.
+* **Command:** `pnpm deploy` (runs `wrangler deploy`).
+* **Serving:** Deployed as a Cloudflare Worker serving Static Assets.
