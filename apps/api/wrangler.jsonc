@@ -6,22 +6,56 @@
   "compatibility_flags": ["nodejs_compat"],
 
   // [OBSERVABILITY]
-  // Enables authorized analytics and improved logging in the Dashboard
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
   },
 
   // [BUILD]
-  // Upload source maps helps de-obfuscate stack traces in the dashboard
   "upload_source_maps": true,
+
+  // [CONTAINERS]
+  // Sandbox SDK configuration with custom Dockerfile
+  "containers": {
+    "image": "./lib/container/Dockerfile",
+    "class_name": "SandboxContainer"
+  },
+
+  // [DURABLE OBJECTS]
+  // Stateful agents managed by Cloudflare Agents SDK
+  "durable_objects": {
+    "bindings": [
+      { "name": "ORCHESTRATOR", "class_name": "OrchestratorAgent" },
+      { "name": "ANALYST", "class_name": "AnalystAgent" },
+      { "name": "DATA_EXPERT", "class_name": "DataExpertAgent" },
+      { "name": "INSIGHTS", "class_name": "InsightsAgent" },
+      { "name": "TERMINAL", "class_name": "TerminalAgent" },
+      { "name": "SANDBOX", "class_name": "SandboxAgent" }
+    ]
+  },
+
+  // [MIGRATIONS]
+  // Enable SQLite for Durable Objects (Cloudflare Agents SDK requirement)
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "OrchestratorAgent",
+        "AnalystAgent",
+        "DataExpertAgent",
+        "InsightsAgent",
+        "TerminalAgent",
+        "SandboxAgent"
+      ]
+    }
+  ],
 
   // [STORAGE - KV]
   "kv_namespaces": [
     {
       "binding": "KV",
       "id": "5b7617cc077c45feac0ac856c2ccad34",
-      "preview_id": "8d4c9a09b6f642a5b8230e8cf68d6b63" 
+      "preview_id": "8d4c9a09b6f642a5b8230e8cf68d6b63"
     }
   ],
 
@@ -37,9 +71,6 @@
   ],
 
   // [VARS]
-  // Keep env vars here. Empty objects can be removed, but keeping it 
-  // explicitly reminds you where to put secrets/config.
   "vars": {
-    "ENVIRONMENT": "production"
   }
 }
