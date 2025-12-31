@@ -3201,6 +3201,18 @@ curl -X POST https://cloudforge-api.workers.dev/api/v1/requests \
 
 ---
 
+### 🧠 Knowledge & Research Protocol
+
+**1. Preloaded Context (PRIORITY):**
+I have preloaded your knowledge base with extensive documentation covering the **Cloudflare Sandbox SDK**, **Agents SDK**, **Drizzle/D1**, and **OpenAPI** patterns. You **MUST** reference this existing context first when designing the `BackendAgent`, `PlannerAgent`, and database schemas. Do not hallucinate APIs; verify against this provided knowledge.
+
+**2. Active Research Tool (FALLBACK):**
+If you encounter a knowledge gap, need to verify a specific API signature, or get stuck on a Cloudflare-specific error, you have access to a live RAG tool in the environment.
+* **Command:** `pnpm exec tsx scripts/ask-cloudflare.ts "Your specific question here"`
+* **When to use:** Use this *immediately* if you are unsure about a binding configuration, a specific SDK method, or a migration syntax. Do not guess—query the docs.
+
+---
+
 ## SUMMARY
 
 This comprehensive prompt provides everything needed to build CloudForge, an agentic Cloudflare Worker builder service with:
