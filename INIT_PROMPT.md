@@ -1,10 +1,3 @@
-I'll research the Cloudflare documentation for sandbox-sdk and API methods to build a comprehensive prompt for your coding agent.Now I have comprehensive context from the Cloudflare documentation. Let me compile this into a comprehensive prompt for your coding agent.
-
----
-
-# Comprehensive Claude Code Prompt: Agentic Worker Builder Service
-
-```markdown
 # PROJECT: CloudForge - Agentic Cloudflare Worker Builder Service
 
 ## OVERVIEW
@@ -3224,8 +3217,3 @@ This comprehensive prompt provides everything needed to build CloudForge, an age
 - **Comprehensive future features roadmap**
 
 The service follows the monorepo structure (apps/api, apps/app) and uses consistent naming conventions for all Cloudflare resources.
-```
-
----
-
-This prompt is ready for your coding agent. It covers all the key aspects you requested including the Sandbox SDK with custom Dockerfile, multi-agent orchestration, Drizzle ORM, Hono REST/WebSocket/MCP APIs, OpenAPI 3.1.0 compliance, realtime progress tracking, frontend with agent configuration, and a comprehensive future features roadmap.          
