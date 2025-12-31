@@ -4,7 +4,7 @@
 
 CloudForge is an AI-powered, agentic service that accepts natural language prompts to automatically plan, build, and deploy Cloudflare Workers. The system uses a coordinated team of AI agents powered by Cloudflare Workers AI, orchestrated through the Cloudflare Agents SDK, with secure code execution in Cloudflare Sandbox SDK containers.
 
-The project is built as a full-stack monorepo optimized for Cloudflare Workers deployment, utilizing Bun as the primary runtime and package manager.
+The project is built as a full-stack monorepo optimized for Cloudflare Workers deployment, utilizing pnpm as the primary runtime and package manager.
 
 ## Repository Structure
 
@@ -41,7 +41,7 @@ cloudforge/
 
 | Technology | Purpose | Documentation |
 | --- | --- | --- |
-| **Bun** | Runtime & Package Manager | https://bun.sh/ |
+| **pnpm** | Runtime & Package Manager | https://pnpm.sh/ |
 | **Cloudflare Workers** | Serverless compute | https://developers.cloudflare.com/workers/ |
 | **Cloudflare Agents SDK** | Multi-agent orchestration | https://developers.cloudflare.com/agents/ |
 | **Cloudflare Sandbox SDK** | Secure code execution | https://developers.cloudflare.com/sandbox/ |
@@ -54,7 +54,7 @@ cloudforge/
 
 ### Key Patterns
 
-* **Monorepo**: Turborepo with Bun workspaces.
+* **Monorepo**: Turborepo with pnpm workspaces.
 * **API Design**: tRPC for app communication, REST/OpenAPI for external access.
 * **Database**: Drizzle ORM with D1 (No raw SQL).
 * **State Management**: Durable Objects (Agent state) & Jotai (Frontend state).
@@ -87,44 +87,44 @@ graph TD
 
 ```
 
-## Essential Commands (Bun)
+## Essential Commands (pnpm)
 
-Agents and developers should use `bun` for all lifecycle scripts.
+Agents and developers should use `pnpm` for all lifecycle scripts.
 
 ```bash
 # Development
-bun dev                       # Start web app dev server
-bun web:dev                   # Start marketing site
-bun api:dev                   # Start API server (Agent backend)
-bun app:dev                   # Start main app dashboard
+pnpm dev                       # Start web app dev server
+pnpm web:dev                   # Start marketing site
+pnpm api:dev                   # Start API server (Agent backend)
+pnpm app:dev                   # Start main app dashboard
 
 # Building
-bun build                     # Build all apps
-bun web:build                 # Build marketing site
-bun app:build                 # Build main app
-bun email:build               # Build email templates
-bun --filter @repo/api build  # Build API types
+pnpm build                     # Build all apps
+pnpm web:build                 # Build marketing site
+pnpm app:build                 # Build main app
+pnpm email:build               # Build email templates
+pnpm --filter @repo/api build  # Build API types
 
 # Testing
-bun test                      # Run all tests
-bun app:test                  # Test main app
-bun api:test                  # Test API
+pnpm test                      # Run all tests
+pnpm app:test                  # Test main app
+pnpm api:test                  # Test API
 
 # UI Components (shadcn/ui)
-bun ui:add <component>        # Add shadcn/ui component
-bun ui:list                   # List installed components
-bun ui:update                 # Update all components
+pnpm ui:add <component>        # Add shadcn/ui component
+pnpm ui:list                   # List installed components
+pnpm ui:update                 # Update all components
 
 # Database Management
-bun --filter @repo/db generate # Generate migrations
-bun --filter @repo/db push     # Apply DB schema changes to D1
-bun --filter @repo/db studio   # Open DB GUI
-bun --filter @repo/db seed     # Seed sample data
+pnpm --filter @repo/db generate # Generate migrations
+pnpm --filter @repo/db push     # Apply DB schema changes to D1
+pnpm --filter @repo/db studio   # Open DB GUI
+pnpm --filter @repo/db seed     # Seed sample data
 
 # Deployment
-bun web:deploy                # Deploy marketing site
-bun api:deploy                # Deploy API server
-bun app:deploy                # Deploy main React app
+pnpm web:deploy                # Deploy marketing site
+pnpm api:deploy                # Deploy API server
+pnpm app:deploy                # Deploy main React app
 
 ```
 
@@ -135,7 +135,7 @@ bun app:deploy                # Deploy main React app
 * **Functional Programming:** Favor functional patterns (hooks, pure functions) over classes.
 * **Modern TypeScript:** Use `const assertions`, template literals. Avoid `any`.
 * **Imports:** Use named imports (`import { foo } from "bar"`) to support tree-shaking.
-* **Bun/Hono Idioms:** Use native Bun APIs where possible. Use Hono middleware for logic.
+* **pnpm/Hono Idioms:** Use native pnpm APIs where possible. Use Hono middleware for logic.
 
 ### 2. Database Access
 
@@ -238,7 +238,7 @@ const docsContext = await agent.callMcpTool('cloudflare-docs', 'search', {
 
 1. Update `AGENTS.md` or sub-project `AGENTS.md` when architectural changes occur.
 2. Add OpenAPI documentation for new endpoints.
-3. Use `bun lint` to verify code quality before committing.
+3. Use `pnpm lint` to verify code quality before committing.
 
 
 
