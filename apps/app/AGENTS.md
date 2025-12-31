@@ -139,3 +139,14 @@ export const Route = createFileRoute('/(app)')({
 
 * **Strict TypeScript:** No `any` types. Use strict null checks.
 * **Path Aliases:** Use `@/*` for all imports (e.g., `import { Button } from "@/components/ui/button"`).
+
+## 📚 Documentation & Research Tool
+
+This repository includes a built-in CLI tool for querying Cloudflare documentation via the Model Context Protocol (MCP). Agents should use this tool to verify implementation details for Cloudflare features (D1, Workers AI, Durable Objects, etc.) before writing code.
+
+### Usage
+Run the query script from the project root:
+
+```bash
+pnpm exec tsx scripts/ask-cloudflare.ts "How do I configure Drizzle with Cloudflare D1?"
+```
