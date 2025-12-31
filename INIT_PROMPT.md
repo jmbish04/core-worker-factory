@@ -289,92 +289,92 @@ export default {
 
 ### 3.1 Wrangler Configuration
 
-Create `apps/api/wrangler.jsonc`:
+Already configured for you .. do not modify the bindings as they have already been created and filled in for you, `apps/api/wrangler.jsonc`:
 
 ```jsonc
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "cloudforge-api",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-10-13",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "core-worker-factory-api",
+  "main": "worker.ts",
+  "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
-  
-  // D1 Database
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "cloudforge-db",
-      "database_id": "<YOUR_D1_DATABASE_ID>"
-    }
-  ],
-  
-  // R2 Storage for artifacts
-  "r2_buckets": [
-    {
-      "binding": "ARTIFACTS",
-      "bucket_name": "cloudforge-artifacts"
-    }
-  ],
-  
-  // KV for caching
-  "kv_namespaces": [
-    {
-      "binding": "CACHE",
-      "id": "<YOUR_KV_NAMESPACE_ID>"
-    }
-  ],
-  
-  // Workers AI
+
+  // [OBSERVABILITY]
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // [BUILD]
+  "upload_source_maps": true,
+
+  // [WORKER AI]
+  // Usage: env.AI.run
   "ai": {
     "binding": "AI"
   },
-  
-  // Sandbox SDK Container
-  "containers": [
-    {
-      "class_name": "Sandbox",
-      "image": "./Dockerfile",
-      "max_instances": 10
-    }
-  ],
-  
-  // Durable Objects for Agents
+
+  // [CONTAINERS]
+  // Sandbox SDK configuration with custom Dockerfile
+  "containers": {
+    "image": "./Dockerfile",
+    "class_name": "SandboxContainer"
+  },
+
+  // [DURABLE OBJECTS]
+  // Stateful agents managed by Cloudflare Agents SDK
   "durable_objects": {
     "bindings": [
-      { "class_name": "Sandbox", "name": "Sandbox" },
-      { "class_name": "OrchestratorAgent", "name": "ORCHESTRATOR" },
-      { "class_name": "PlannerAgent", "name": "PLANNER" },
-      { "class_name": "BackendAgent", "name": "BACKEND" },
-      { "class_name": "UXAgent", "name": "UX" },
-      { "class_name": "DataEngineerAgent", "name": "DATA_ENGINEER" },
-      { "class_name": "APIAgent", "name": "API" },
-      { "class_name": "DocumentationAgent", "name": "DOCUMENTATION" },
-      { "class_name": "QAAgent", "name": "QA" }
+      { "name": "ORCHESTRATOR", "class_name": "OrchestratorAgent" },
+      { "name": "ANALYST", "class_name": "AnalystAgent" },
+      { "name": "DATA_EXPERT", "class_name": "DataExpertAgent" },
+      { "name": "INSIGHTS", "class_name": "InsightsAgent" },
+      { "name": "TERMINAL", "class_name": "TerminalAgent" },
+      { "name": "SANDBOX", "class_name": "SandboxAgent" }
     ]
   },
-  
+
+  // [MIGRATIONS]
+  // Enable SQLite for Durable Objects (Cloudflare Agents SDK requirement)
   "migrations": [
     {
+      "tag": "v1",
       "new_sqlite_classes": [
-        "Sandbox",
         "OrchestratorAgent",
-        "PlannerAgent",
-        "BackendAgent",
-        "UXAgent",
-        "DataEngineerAgent",
-        "APIAgent",
-        "DocumentationAgent",
-        "QAAgent"
-      ],
-      "tag": "v1"
+        "AnalystAgent",
+        "DataExpertAgent",
+        "InsightsAgent",
+        "TerminalAgent",
+        "SandboxAgent"
+      ]
     }
   ],
-  
-  // Environment variables
+
+  // [STORAGE - KV]
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "5b7617cc077c45feac0ac856c2ccad34",
+      "preview_id": "8d4c9a09b6f642a5b8230e8cf68d6b63"
+    }
+  ],
+
+  // [STORAGE - D1]
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "core-worker-factory",
+      "database_id": "2f036faf-521c-49cc-8f42-43e18370d821",
+      "preview_database_id": "9af6da1f-246c-47c3-b8e1-0489187ffaa2",
+      "migrations_dir": "./drizzle/migrations"
+    }
+  ],
+
+  // [VARS]
   "vars": {
-    "ENVIRONMENT": "production"
   }
 }
+
 ```
 
 ### 3.2 Main Entry Point with Hono
